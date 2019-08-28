@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wy.todo_backend.item.dao.ItemMapper">
+    
+
+
+    <insert id="createNewItem" useGeneratedKeys="true" keyProperty="id" parameterType="com.wy.todo_backend.item.entity.Item">
+        INSERT INTO `todo_item`
+        Set `content` = #{content},
+            `type` = #{type},
+            `create_time` = #{create_time}
+    </insert>
+
+    <insert id="createNewRelation">
+        INSERT INTO `user_relation`
+        Set `user_id` = #{user_id},
+            `item_id` = #{item_id},
+            `status` = 0
+    </insert>
+
+    <select id="getAll" resultType="com.wy.todo_backend.item.entity.Item">
+        SELECT * FROM `todo_item`
+        WHERE `id` in (
+            SELECT `item_id` from `user_relation`
+            where  `user_id` = #{user_id}
+        ) order by `create_time` desc
+    </select>
+
+    <select id="getItems" resultType="com.wy.todo_backend.item.entity.Item">
+        SELECT * FROM `todo_item`
+        WHERE
+        `id` in (
+            SELECT `item_id` from `user_relation`
+            where  `user_id` = #{user_id}
+            and `status` = #{status}
+        ) order by `create_time` desc
+    </select>
+
+    <update id="markComplete">
+        update `user_relation`
+        set `status` = 1
+        where `item_id` = #{item_id}
+    </update>
+    
+    <update id="setFinished">
+        update `todo_item`
+        set `finished_time` = #{finished_time}
+        where `id` = #{item_id};
+    </update>
+
+
+</mapper>
