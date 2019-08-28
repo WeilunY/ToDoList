@@ -46,107 +46,6 @@ class _ToDoListState extends State<ToDoList> {
       this._todoItems = ( parseToDo(response.body) ?? []);
     });
 
-
-
-  }
-
-  // add content to list
-  void _addTodoItem(Map<String, dynamic> task) async{
-
-   if (task.length > 0){
-
-    var url = "http://localhost:8080/item/create";
-    Map<String, String> headers = {"Content-type": "application/json"};
-    String json = '{"content": "${task['content']}", "type": ${task['type']}, "user_id": 1}';
-    final response = await http.Client().post(url, headers: headers, body: json);
-
-    this.getData();
-
-   }
-  }
-
-  void _removeTodoItem(int id) async{
-
-    var url = "http://localhost:8080/item/finish";
-    Map<String, String> headers = {"Content-type": "application/json"};
-    String json = '{"item_id": "$id"}';
-    final response = await http.Client().post(url, headers: headers, body: json);
-
-    this.getData();
-
-  }
-
-
-  // building the list
-
-  Widget _buildTodoList() {
-    int color_code = 1000;
-    return new ListView.builder(
-      
-      itemBuilder: (context, index) {
-        if(index < _todoItems.length) {
-          if(index % 2 == 0){
-            if(color_code > 100){
-              color_code -= 100;
-            } else {
-              color_code = 100;
-            }
-          }
-            
-          return _buildTodoItem(_todoItems[index], color_code);
-        }
-      },
-    );
-  }
-
-
-  Widget _buildTodoItem(ToDoItem todo, int color_code){
-    Map<int, dynamic> colors = {1: Colors.blue[color_code], 2: Colors.purple[color_code], 3: Colors.indigo[color_code]};
-    Map<int, dynamic> icons = {1: Icons.home, 2: Icons.school, 3: Icons.business};
-    
-    return Card(
-        elevation: 8.0,
-        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-
-        child: Container(
-          decoration: BoxDecoration(color: colors[todo.type]),
-          
-          child: 
-            ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-
-              leading: Container(
-                padding: EdgeInsets.only(right: 12.0),
-                decoration: new BoxDecoration(
-                    border: new Border(
-                        right: new BorderSide(width: 1.0, color: Colors.white24))
-                        ),
-                child: Icon(icons[todo.type], color: Colors.white,),
-                ),
-
-              title: Text(todo.content, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.0),),
-
-              subtitle: Container(
-                margin: EdgeInsets.only(top: 8.0),
-                child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                   Text(todo.create_time, style: TextStyle(color: Colors.white),),
-                   
-                ],
-               ),
-              ),
-              
-
-              trailing: FlatButton(
-                    child: Icon(Icons.check_circle, color: Colors.white),
-                    onPressed:() => _promptRemoveTodoItem(todo),
-                  ),
-
-            ),
-          
-      )
-    );
   }
 
   @override
@@ -168,7 +67,96 @@ class _ToDoListState extends State<ToDoList> {
     );
   }
 
-  void _pushTodoScreen() async {
+  // building the list
+
+  Widget _buildTodoList() {
+    int colorCode = 1000;
+    return new ListView.builder(
+      
+      itemBuilder: (context, index) {
+        if(index < _todoItems.length) {
+          if(index % 2 == 0){
+            if(colorCode > 100){
+              colorCode -= 100;
+            } else {
+              colorCode = 100;
+            }
+          }
+            
+          return _buildTodoItem(_todoItems[index], colorCode);
+        }
+      },
+    );
+  }
+
+
+  Widget _buildTodoItem(ToDoItem todo, int colorCode){
+
+    Map<int, dynamic> colors = {1: Colors.blue[colorCode], 2: Colors.purple[colorCode], 3: Colors.indigo[colorCode]};
+    Map<int, dynamic> icons = {1: Icons.home, 2: Icons.school, 3: Icons.business};
+    
+    return Card(
+        elevation: 8.0,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
+        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+
+        child: Container(
+          decoration: BoxDecoration(color: colors[todo.type]),
+
+          child: 
+            ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+
+              leading: Container(
+                padding: EdgeInsets.only(right: 12.0),
+                decoration: new BoxDecoration(
+                border: new Border(
+                  right: new BorderSide(width: 1.0, color: Colors.white24)
+                  )
+                ),
+
+                child: Icon(icons[todo.type], color: Colors.white,),
+                ),
+
+              title: Text(todo.content, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.0),),
+
+              subtitle: Container(
+                margin: EdgeInsets.only(top: 8.0),
+                child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                   Text(todo.create_time, style: TextStyle(color: Colors.white),),
+                   
+                ],
+               ),
+              ),
+              
+
+              trailing: FlatButton(
+                child: Icon(Icons.check_circle, color: Colors.white),
+                onPressed:() => _promptRemoveTodoItem(todo),
+              ),
+          ),   
+        )
+      );
+    }
+
+  // add content to list
+  void _addTodoItem(Map<String, dynamic> task) async{
+
+   if (task.length > 0){
+
+    var url = "http://localhost:8080/item/create";
+    Map<String, String> headers = {"Content-type": "application/json"};
+    String json = '{"content": "${task['content']}", "type": ${task['type']}, "user_id": 1}';
+    final response = await http.Client().post(url, headers: headers, body: json);
+
+    this.getData();
+
+   }
+  }
+
+    void _pushTodoScreen() async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => TodoForm())
     );
@@ -176,6 +164,17 @@ class _ToDoListState extends State<ToDoList> {
     if(result != null){
        this._addTodoItem(result);
     }
+  }
+
+  void _removeTodoItem(int id) async{
+
+    var url = "http://localhost:8080/item/finish";
+    Map<String, String> headers = {"Content-type": "application/json"};
+    String json = '{"item_id": "$id"}';
+    final response = await http.Client().post(url, headers: headers, body: json);
+
+    this.getData();
+
   }
 
   void _promptRemoveTodoItem(ToDoItem todo) {
