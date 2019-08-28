@@ -21,7 +21,7 @@ spring:
 
 mybatis:
   mapper-locations: classpath*:/mapping/*/*.xml
-  type-aliases-package: com.wy.gre_vocab.*.entity
+  type-aliases-package: com.wy.todo_backend.*.entity
 
 logging:
   level:
