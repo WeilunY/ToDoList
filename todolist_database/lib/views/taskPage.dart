@@ -87,8 +87,7 @@ class _TaskPageState extends State<TaskPage> {
               new FlatButton(
                   child: new Text('COMPLETE'),
                   onPressed: () {
-                    //_removeTodoItem(todo.id);
-                    Navigator.of(context).pop(true);
+                    _handleComplete(todo);
                   }
                 )
              ]
@@ -96,6 +95,20 @@ class _TaskPageState extends State<TaskPage> {
           );
         }
     );
+  }
+
+  void _handleComplete(Task todo) async{
+
+    todo.status = 1;
+    DateTime now = new DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+
+    todo.finishedTime = formattedDate;
+
+    _tasksBloc.inConfirmTask.add(todo);
+
+    Navigator.of(context).pop(true);
+
   }
 
   void _promptDeleteTodoItem(Task todo) {
@@ -112,8 +125,7 @@ class _TaskPageState extends State<TaskPage> {
               new FlatButton(
                   child: new Text('DELETE'),
                   onPressed: () {
-                    //_removeTodoItem(todo.id);
-                    Navigator.of(context).pop(true);
+                    _handleDelete(todo.id);
                   }
                 )
              ]
@@ -121,6 +133,18 @@ class _TaskPageState extends State<TaskPage> {
           );
         }
     );
+  }
+
+  void _handleDelete(int id){
+
+    _tasksBloc.inDeleteTask.add(id);
+
+    _tasksBloc.deleted.listen((deleted) {
+        if (deleted) {
+            Navigator.of(context).pop(true);
+        }
+    });
+
   }
 
   @override
@@ -209,28 +233,13 @@ class _TaskPageState extends State<TaskPage> {
       confirmDismiss: (direction) async {
         if(direction == DismissDirection.startToEnd) {
             _promptDeleteTodoItem(todo);
-            
-            
+         
           } else {
             _promptCompleteTodoItem(todo);
             
           }
       },
 
-      onDismissed: (direction) {
-
-          if(direction == DismissDirection.startToEnd) {
-            //_promptDeleteTodoItem(todo);
-            Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text("Item Deleted")));
-            
-          } else {
-            //_promptCompleteTodoItem(todo);
-            Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text("Item Complete")));
-          }
-  
-      },
       background: Container(
         padding: EdgeInsets.only(left: 16.0),
         color: Colors.red[800],
@@ -245,7 +254,7 @@ class _TaskPageState extends State<TaskPage> {
 
       secondaryBackground: Container(
         padding: EdgeInsets.only(right: 16.0),
-        color: Colors.cyan[800],
+        color: Colors.green[800],
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -294,18 +303,19 @@ class _TaskPageState extends State<TaskPage> {
               ),
               
 
-              trailing: 
-                    FlatButton(
-                      child: Icon(Icons.edit, color: Colors.white),
-                      onPressed:() => _navigateToNote(todo),//_promptRemoveTodoItem(todo),
+              // trailing: 
+              //       FlatButton(
+              //         child: Icon(Icons.edit, color: Colors.white),
+              //         onPressed:() => _navigateToNote(todo),//_promptRemoveTodoItem(todo),
                  
               )
+
               
              
           ),   
         )
-      ),
-    );
+      );
+    
     }
 
 

@@ -8,21 +8,33 @@ class TasksBloc implements BlocBase {
     
     final _tasksController = StreamController<List<Task>>.broadcast();
 
-    // Input stream. We add our Tasks to the stream using this variable.
+    // I/O streams:
     StreamSink<List<Task>> get _inTasks => _tasksController.sink;
-
-    // Output stream. This one will be used within our pages to display the Tasks.
     Stream<List<Task>> get tasks => _tasksController.stream;
 
-    // Input stream for adding new Tasks. We'll call this from our pages.
+    // add Task
     final _addTaskController = StreamController<Task>.broadcast();
     StreamSink<Task> get inAddTask => _addTaskController.sink;
+
+    // deleteTask
+    final _deleteTaskController = StreamController<int>.broadcast();
+    StreamSink<int> get inDeleteTask => _deleteTaskController.sink;
+
+    final _taskDeletedController = StreamController<bool>.broadcast();
+
+    StreamSink<bool> get _inDeleted => _taskDeletedController.sink;
+    Stream<bool> get deleted => _taskDeletedController.stream;
+
+    // confirmTask
+    final _confirmTaskController = StreamController<Task>.broadcast();
+    StreamSink<Task> get inConfirmTask => _confirmTaskController.sink;
 
     TasksBloc() {
         // Retrieve all the Tasks on initialization
         getTasks();
 
-        // Listens for changes to the addTaskController and calls _handleAddTask on change
+        _confirmTaskController.stream.listen(_handleConfirmTask);
+        _deleteTaskController.stream.listen(_handleDeleteTask);
         _addTaskController.stream.listen(_handleAddTask);
     }
 
@@ -31,30 +43,32 @@ class TasksBloc implements BlocBase {
     void dispose() {
         _tasksController.close();
         _addTaskController.close();
+        _deleteTaskController.close();
+        _confirmTaskController.close();
+        _taskDeletedController.close();
     }
 
     void getTasks() async {
-        // Retrieve all the Tasks from the database
-        List<Task> tasks = await DBProvider.db.getStatusTask(0);
 
-        // Add all of the Tasks to the stream so we can grab them later from our pages
+        List<Task> tasks = await DBProvider.db.getStatusTask(0);
         _inTasks.add(tasks);
     }
 
     void _handleAddTask(Task task) async {
-        // Create the Task in the database
-        await DBProvider.db.newTask(task);
 
-        // Retrieve all the Tasks again after one is added.
-        // This allows our pages to update properly and display the
-        // newly added Task.
+        await DBProvider.db.newTask(task);
         getTasks();
     }
 
-    void _handleUpdateTask(Task task) async {
+    void _handleConfirmTask(Task task) async {
 
       await DBProvider.db.updateTask(task);
-
       getTasks();
+    }
+
+    void _handleDeleteTask(int id) async {
+
+        await DBProvider.db.deleteTask(id);
+        _inDeleted.add(true);
     }
 }

@@ -68,15 +68,15 @@ class _MyHomePageState extends State<MyHomePage> {
             items: [
               BottomNavigationBarItem(
                 title: Text('Todos'),
-                icon: Icon(Icons.home),
+                icon: Icon(Icons.list),
               ),
               BottomNavigationBarItem(
                 title: Text('History'),
-                icon: Icon(Icons.notifications),
+                icon: Icon(Icons.history),
               ),
               BottomNavigationBarItem(
                 title: Text('Profile'),
-                icon: Icon(Icons.settings),
+                icon: Icon(Icons.person),
               ),
             ],
           );
