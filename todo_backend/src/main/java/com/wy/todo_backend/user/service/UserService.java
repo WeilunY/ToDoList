@@ -33,6 +33,12 @@ public class UserService {
         if(userMapper.checkExistId(user.getId()) == 0){
             return -1;
         }
+
+        if (! user.getEmail().equals(userMapper.getUser(user.getId()).getEmail())
+        && userMapper.checkExist(user.getEmail()) != 0){
+            return -1;
+        }
+        
         return userMapper.updateUser(user);
     }
 }
