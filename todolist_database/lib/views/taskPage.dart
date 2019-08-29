@@ -27,7 +27,6 @@ class _TaskPageState extends State<TaskPage> {
       // we can simply use this to retrieve it.
       _tasksBloc = BlocProvider.of<TasksBloc>(context);
 
-      print(_tasksBloc);
   }
 
   void _addTask(Map<String, dynamic> result) async {
@@ -74,6 +73,56 @@ class _TaskPageState extends State<TaskPage> {
     }
   }
 
+  void _promptCompleteTodoItem(Task todo) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new AlertDialog(
+            title: Text('Complete "${todo.content}"?'),
+            actions: <Widget>[
+              new FlatButton(
+                  child: new Text('CANCEL'),
+                  onPressed: () => Navigator.of(context).pop(false)
+              ),
+              new FlatButton(
+                  child: new Text('COMPLETE'),
+                  onPressed: () {
+                    //_removeTodoItem(todo.id);
+                    Navigator.of(context).pop(true);
+                  }
+                )
+             ]
+
+          );
+        }
+    );
+  }
+
+  void _promptDeleteTodoItem(Task todo) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new AlertDialog(
+            title: Text('Delete "${todo.content}" ?'),
+            actions: <Widget>[
+              new FlatButton(
+                  child: new Text('CANCEL'),
+                  onPressed: () => Navigator.of(context).pop(false)
+              ),
+              new FlatButton(
+                  child: new Text('DELETE'),
+                  onPressed: () {
+                    //_removeTodoItem(todo.id);
+                    Navigator.of(context).pop(true);
+                  }
+                )
+             ]
+
+          );
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -94,9 +143,9 @@ class _TaskPageState extends State<TaskPage> {
                 builder: (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
                   
                   if (snapshot.hasData) {
-                  // If there are no notes (data), display this message.
+
                     if (snapshot.data.length == 0) {
-                        return Text('No Tasks to do');
+                        return Center(child: Text('No Tasks to do'));
                     }
 
                     List<Task> tasks = snapshot.data;
@@ -106,6 +155,8 @@ class _TaskPageState extends State<TaskPage> {
                       itemCount: snapshot.data.length,
 
                       itemBuilder: (BuildContext context, int index) {
+
+                        // Change Colors
                         if(index < tasks.length) {
                           if(index % 2 == 0){
                             if(colorCode > 100){
@@ -131,6 +182,8 @@ class _TaskPageState extends State<TaskPage> {
           ],
         )
       ),
+
+      // Buttons: 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: new FloatingActionButton(
         elevation: 8.0,
@@ -141,18 +194,66 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
   
+  // Build Each Item: 
   Widget _buildTodoItem(Task todo, int colorCode){
 
     Map<int, dynamic> colors = {1: Colors.blue[colorCode], 2: Colors.purple[colorCode], 3: Colors.indigo[colorCode]};
     Map<int, dynamic> icons = {1: Icons.home, 2: Icons.school, 3: Icons.business};
+
+    const textStyle =  TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18.0);
     
     return Dismissible(
+
       key: Key(todo.id.toString()),
+
+      confirmDismiss: (direction) async {
+        if(direction == DismissDirection.startToEnd) {
+            _promptDeleteTodoItem(todo);
+            
+            
+          } else {
+            _promptCompleteTodoItem(todo);
+            
+          }
+      },
+
       onDismissed: (direction) {
-          
+
+          if(direction == DismissDirection.startToEnd) {
+            //_promptDeleteTodoItem(todo);
+            Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text("Item Deleted")));
+            
+          } else {
+            //_promptCompleteTodoItem(todo);
+            Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text("Item Complete")));
+          }
   
       },
-      background: Container(color: Colors.red),
+      background: Container(
+        padding: EdgeInsets.only(left: 16.0),
+        color: Colors.red[800],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text("DELETE", style: textStyle,)
+          ],
+        )
+      ),
+
+      secondaryBackground: Container(
+        padding: EdgeInsets.only(right: 16.0),
+        color: Colors.cyan[800],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Text("COMPELTE", style: textStyle)
+          ],
+        )
+      ),
 
       child: Card(
         color: colors[todo.type],

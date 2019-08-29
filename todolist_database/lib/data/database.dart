@@ -62,7 +62,7 @@ class DBProvider {
   // get all tasks
   getTasks() async {
     final db = await database;
-    var res = await db.query('task', orderBy: 'create_time desc');
+    var res = await db.query('task', orderBy: 'id desc');
     List<Task> tasks = res.isNotEmpty ? res.map((task) => Task.fromJson(task)).toList() : [];
 
     return tasks;
@@ -71,7 +71,7 @@ class DBProvider {
 
   getStatusTask(int status) async {
     final db = await database;
-    var res = await db.query('task', where: 'status = ?', whereArgs: [status], orderBy: 'create_time desc');
+    var res = await db.query('task', where: 'status = ?', whereArgs: [status], orderBy: 'id desc');
 
     List<Task> tasks = res.isNotEmpty ? res.map((task) => Task.fromJson(task)).toList() : [];
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:todolist_database/data/blocs/bloc_provider.dart';
+//import 'package:http/http.dart' as http;
+import '../data/blocs/history_bloc.dart';
 import '../model/task.dart';
 import 'package:intl/intl.dart';
 
@@ -32,7 +34,15 @@ class _HistoryState extends State<History> {
   //   return parsed.map<ToDoItem> ((json) => ToDoItem.fromJson(json)).toList();
   // }
 
-  
+  HistoryBloc _historyBloc;
+
+  @override
+  void initState() {
+    
+    super.initState();
+
+    _historyBloc = BlocProvider.of<HistoryBloc>(context);
+  }
 
   @override
   Widget build(BuildContext context ){
@@ -43,6 +53,34 @@ class _HistoryState extends State<History> {
         ),
 
         backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
+
+        body: StreamBuilder<List<Task>> (
+          stream: _historyBloc.tasks,
+          builder: (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
+            
+            if(snapshot.hasData){
+
+              if(snapshot.data.length == 0){
+                return Center(child: Text("Empty History"),);
+              }
+
+              List<Task> tasks = snapshot.data;
+
+              return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildTodoItem(tasks[index]);
+                },
+
+              );
+
+            }
+
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        ),
 
 
         // body: FutureBuilder<List<ToDoItem>> (
@@ -60,10 +98,55 @@ class _HistoryState extends State<History> {
     );
   }
 
+    Widget _buildTodoItem(Task todo){
 
+    var finish = "Unfinished";
+    var icon = Icons.cancel;
+   
 
+    if(todo.status == 1){
+      finish = "Finished";
+      icon = Icons.check_circle;
+    }
+    
+  
+    return Card(
+        elevation: 8.0,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
+        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+        color: todo.status == 1 ? Colors.blue[900] : Colors.blue,
+        child: 
+            ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              leading: Container(
+                padding: EdgeInsets.only(right: 12.0),
+                decoration: new BoxDecoration(
+                    border: new Border(
+                        right: new BorderSide(width: 1.0,color: Colors.white,))
+                        ),
+                child: Icon(icon, color: Colors.white,),
+                ),
 
+              title: Text(finish, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0, color: Colors.white,),),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                   Text(todo.content, style: TextStyle(color: Colors.white,)),
+                   
+                ],
+               )
+
+            ),
+
+    );
+  }
 }
+
+
+
+
+
+
 
 
 // todolist: Helper 
@@ -84,45 +167,3 @@ class _HistoryState extends State<History> {
 //     );
 //   }
 
-//   Widget _buildTodoItem(ToDoItem todo){
-
-//     var finish = "Unfinished";
-//     var icon = Icons.cancel;
-   
-
-//     if(todo.finished_time != ""){
-//       finish = "Finished";
-//       icon = Icons.check_circle;
-//     }
-    
-  
-//     return Card(
-//         elevation: 8.0,
-//         margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-//         color: todo.finished_time != "" ? Colors.blue[900] : Colors.blue,
-//         child: 
-//             ListTile(
-//               contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-//               leading: Container(
-//                 padding: EdgeInsets.only(right: 12.0),
-//                 decoration: new BoxDecoration(
-//                     border: new Border(
-//                         right: new BorderSide(width: 1.0,color: Colors.white,))
-//                         ),
-//                 child: Icon(icon, color: Colors.white,),
-//                 ),
-
-//               title: Text(finish, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0, color: Colors.white,),),
-//               subtitle: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: <Widget>[
-//                    Text(todo.content, style: TextStyle(color: Colors.white,)),
-                   
-//                 ],
-//                )
-
-//             ),
-
-//     );
-//   }
-// }

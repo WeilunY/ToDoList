@@ -6,6 +6,7 @@ import './profile.dart';
 import './history.dart';
 import '../data/blocs/bloc_provider.dart';
 import '../data/blocs/tasks_bloc.dart';
+import '../data/blocs/history_bloc.dart';
 
 class MyHomePage extends StatefulWidget{
   @override
@@ -41,7 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: TaskPage());
 
             case NavBarItem.HISTORY:
-              return History();
+              return BlocProvider(
+                bloc: HistoryBloc(),
+                child: History(),
+              );
 
             case NavBarItem.PROFILE:
               return Profile();
