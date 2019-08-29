@@ -43,7 +43,7 @@ class DBProvider {
           create_time TEXT,
           finished_time TEXT,
           due_date TEXT,
-          status INTEGER
+          status INTEGER DEFAULT 0
         )
 
       ''');
@@ -62,7 +62,7 @@ class DBProvider {
   // get all tasks
   getTasks() async {
     final db = await database;
-    var res = await db.query('task');
+    var res = await db.query('task', orderBy: 'create_time desc');
     List<Task> tasks = res.isNotEmpty ? res.map((task) => Task.fromJson(task)).toList() : [];
 
     return tasks;
@@ -71,7 +71,7 @@ class DBProvider {
 
   getStatusTask(int status) async {
     final db = await database;
-    var res = await db.query('task', where: 'status = ?', whereArgs: [status]);
+    var res = await db.query('task', where: 'status = ?', whereArgs: [status], orderBy: 'create_time desc');
 
     List<Task> tasks = res.isNotEmpty ? res.map((task) => Task.fromJson(task)).toList() : [];
 

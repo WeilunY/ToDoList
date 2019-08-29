@@ -5,6 +5,7 @@ import '../views/view_task.dart';
 import '../data/blocs/view_task_bloc.dart';
 import '../model/task.dart';
 import 'package:intl/intl.dart';
+import './todoForm.dart';
 
 
 class TaskPage extends StatefulWidget {
@@ -25,33 +26,52 @@ class _TaskPageState extends State<TaskPage> {
       // Thanks to the BlocProvider providing this page with the NotesBloc,
       // we can simply use this to retrieve it.
       _tasksBloc = BlocProvider.of<TasksBloc>(context);
+
+      print(_tasksBloc);
   }
 
-  void _addTask() async {
+  void _addTask(Map<String, dynamic> result) async {
+    String content = result['content'];
+    int type = result['type'];
+    String due = '';
+    if(result['due'] != null){
+      due = DateFormat('yyyy-MM-dd').format(result['due']);
+    }
+
+
     DateTime now = new DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
 
-      Task task = new Task(content: "This is a test", createTime: formattedDate, type: 1);
-      _tasksBloc.inAddTask.add(task);
+    Task task = new Task(content: content, createTime: formattedDate, type: type, dueDate: due, status: 0);
+    _tasksBloc.inAddTask.add(task);
+  }
+
+  void _pushTodoScreen() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => TodoForm())
+    );
+    
+    if(result != null){
+       this._addTask(result);
+    }
   }
 
   void _navigateToNote(Task task) async {
 
     bool update = await Navigator.of(context).push(
-        MaterialPageRoute(
-           
-            builder: (context) => BlocProvider(
-                bloc: ViewTaskBloc(),
-                child: ViewTaskPage(
-                    task: task,
-                ),
-            ),
+        MaterialPageRoute( 
+          builder: (context) => BlocProvider(
+              bloc: ViewTaskBloc(),
+              child: ViewTaskPage(
+                  task: task,
+              ),
+          ),
         ),
     );
 
     if (update != null) {
-            _tasksBloc.getTasks();
-        }
+        _tasksBloc.getTasks();
+    }
   }
 
   @override
@@ -72,6 +92,7 @@ class _TaskPageState extends State<TaskPage> {
               child: StreamBuilder<List<Task>>(
                 stream: _tasksBloc.tasks,
                 builder: (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
+                  
                   if (snapshot.hasData) {
                   // If there are no notes (data), display this message.
                     if (snapshot.data.length == 0) {
@@ -110,18 +131,30 @@ class _TaskPageState extends State<TaskPage> {
           ],
         )
       ),
-      floatingActionButton: FloatingActionButton(
-          onPressed: _addTask,
-          child: Icon(Icons.add),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: new FloatingActionButton(
+        elevation: 8.0,
+        backgroundColor: Color.fromRGBO(44, 50, 65, 1.0),
+        onPressed: _pushTodoScreen,
+        tooltip: 'Add task',
+        child: new Icon(Icons.add),),
     );
   }
+  
   Widget _buildTodoItem(Task todo, int colorCode){
 
     Map<int, dynamic> colors = {1: Colors.blue[colorCode], 2: Colors.purple[colorCode], 3: Colors.indigo[colorCode]};
     Map<int, dynamic> icons = {1: Icons.home, 2: Icons.school, 3: Icons.business};
     
-    return Card(
+    return Dismissible(
+      key: Key(todo.id.toString()),
+      onDismissed: (direction) {
+          
+  
+      },
+      background: Container(color: Colors.red),
+
+      child: Card(
         color: colors[todo.type],
         elevation: 8.0,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
@@ -153,6 +186,7 @@ class _TaskPageState extends State<TaskPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                    Text(todo.createTime, style: TextStyle(color: Colors.white),),
+                   Text(todo.dueDate ?? "", style: TextStyle(color: Colors.white),),
                    
                 ],
                ),
@@ -169,7 +203,8 @@ class _TaskPageState extends State<TaskPage> {
              
           ),   
         )
-      );
+      ),
+    );
     }
 
 

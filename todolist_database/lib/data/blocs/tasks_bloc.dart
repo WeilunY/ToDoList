@@ -35,7 +35,7 @@ class TasksBloc implements BlocBase {
 
     void getTasks() async {
         // Retrieve all the Tasks from the database
-        List<Task> tasks = await DBProvider.db.getTasks();
+        List<Task> tasks = await DBProvider.db.getStatusTask(0);
 
         // Add all of the Tasks to the stream so we can grab them later from our pages
         _inTasks.add(tasks);
@@ -49,5 +49,12 @@ class TasksBloc implements BlocBase {
         // This allows our pages to update properly and display the
         // newly added Task.
         getTasks();
+    }
+
+    void _handleUpdateTask(Task task) async {
+
+      await DBProvider.db.updateTask(task);
+
+      getTasks();
     }
 }
