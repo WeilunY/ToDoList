@@ -3,9 +3,9 @@ class Task {
     int id;
     String content;
     int type;
-    String createTime;
-    String finishedTime;
-    String dueDate;
+    int createTime;
+    int finishedTime;
+    int dueDate;
     int status;
 
     Task({

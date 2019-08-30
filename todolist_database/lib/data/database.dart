@@ -40,9 +40,9 @@ class DBProvider {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           content TEXT,
           type INTEGER,
-          create_time TEXT,
-          finished_time TEXT,
-          due_date TEXT,
+          create_time INTEGER,
+          finished_time INTEGER,
+          due_date INTEGER,
           status INTEGER DEFAULT 0
         )
 

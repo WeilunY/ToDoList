@@ -67,14 +67,15 @@ class _HistoryState extends State<History> {
 
     Widget _buildTodoItem(Task todo){
 
-    const textStyle =  TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18.0);
 
-    var finish = "Incomplete";
-    var icon = Icons.cancel;
+    var icon = Icons.cached;
+
+    var created_time = "Created on " + DateFormat("yyyy-MM-dd").format(DateTime.fromMillisecondsSinceEpoch(todo.createTime));
+
+    var finished_time = todo.finishedTime != null ? "Completed on " + DateFormat("yyyy-MM-dd").format(DateTime.fromMillisecondsSinceEpoch(todo.finishedTime)) : "In Progress";
    
 
     if(todo.status == 1){
-      finish = "Complete";
       icon = Icons.check_circle;
     }
     
@@ -108,7 +109,7 @@ class _HistoryState extends State<History> {
       secondaryActions: <Widget>[
         IconSlideAction(
         caption: todo.status == 1 ? "INCOMPLETE" : "COMPLETE",
-        color: todo.status == 1 ? Colors.blue : Colors.blue[900],
+        color: todo.status == 1 ? Colors.purple[600] : Colors.blue[700],
         icon: todo.status == 1 ? Icons.cancel : Icons.check_circle,
         onTap: () {
 
@@ -141,65 +142,13 @@ class _HistoryState extends State<History> {
         ),
       ],
 
-      // onDismissed: (direction) async {
-      //   if(direction == DismissDirection.startToEnd) {
-      //     _handleDelete(todo.id);
-
-      //      Scaffold.of(context).showSnackBar(
-      //        SnackBar(
-      //          content: Text("Item Deleted"),
-      //          action: SnackBarAction(
-      //            label: "Undo",
-      //            onPressed: () {_handleUndoDelete(todo); },
-      //          ),
-      //        )
-      //      );
-         
-      //     } else {
-      //       _handleINComplete(todo);
-
-      //       Scaffold.of(context).showSnackBar(
-      //        SnackBar(
-      //          content: Text("Item Completed"),
-      //          action: SnackBarAction(
-      //            label: "Undo",
-      //            onPressed: () {_handleUndoINComplete(todo); },
-      //          ),)
-      //      );
-            
-      //     }
-      // },
-
-      // background: Container(
-      //   padding: EdgeInsets.only(left: 16.0),
-      //   color: Colors.red[800],
-      //   child: Column(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     crossAxisAlignment: CrossAxisAlignment.start,
-      //     children: <Widget>[
-      //       Text("DELETE", style: textStyle,)
-      //     ],
-      //   )
-      // ),
-
-      // secondaryBackground: Container(
-      //   padding: EdgeInsets.only(right: 16.0),
-      //   color: Colors.green[800],
-      //   child: Column(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     crossAxisAlignment: CrossAxisAlignment.end,
-      //     children: <Widget>[
-      //       Text("INCOMPELTE", style: textStyle)
-      //     ],
-      //   )
-      // ),
 
       child: 
         Card(
           elevation: 8.0,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
           margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-          color: todo.status == 1 ? Colors.blue[900] : Colors.blue,
+          color: todo.status == 1 ? Colors.blue[700] : Colors.purple[600],
           child: 
               ListTile(
                 contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -212,14 +161,24 @@ class _HistoryState extends State<History> {
                   child: Icon(icon, color: Colors.white,),
                   ),
 
-                title: Text(finish, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0, color: Colors.white,),),
-                subtitle: Column(
+                title: Text(todo.content, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0, color: Colors.white,),),
+                
+                subtitle: Container(
+                  margin: EdgeInsets.only(top: 8.0),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(todo.content, style: TextStyle(color: Colors.white,)),
-                    
-                  ],
-                )
+                    Container(
+                      padding: EdgeInsets.only(bottom: 6.0),     
+                      child: Text(created_time, 
+                            style: TextStyle(color: Colors.grey[200], fontSize: 14.0),),
+                    ),           
+                    Text(finished_time, 
+                          style: TextStyle(color: Colors.grey[200], fontSize: 14.0),),
+
+                    ],
+                  ),
+                ),
               ),
       ),
 
@@ -234,7 +193,7 @@ class _HistoryState extends State<History> {
 
     temp = todo.finishedTime;
 
-    todo.finishedTime = "";
+    todo.finishedTime = null;
 
     _historyBloc.inUnConfirmTask.add(todo);
 
@@ -259,10 +218,10 @@ class _HistoryState extends State<History> {
   void _handleComplete(Task todo) async{
 
     todo.status = 1;
-    DateTime now = new DateTime.now();
-    String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+    int now = new DateTime.now().millisecondsSinceEpoch;
+    //String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
 
-    todo.finishedTime = formattedDate;
+    todo.finishedTime = now;
 
     _historyBloc.inUnConfirmTask.add(todo);
 
@@ -270,7 +229,7 @@ class _HistoryState extends State<History> {
 
   void _handleUndoComplete(Task todo) async {
       todo.status = 0;
-      todo.finishedTime = "";
+      todo.finishedTime = null;
      _historyBloc.inUnConfirmTask.add(todo);
   }
 

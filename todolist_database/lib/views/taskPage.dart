@@ -32,16 +32,17 @@ class _TaskPageState extends State<TaskPage> {
   void _addTask(Map<String, dynamic> result) async {
     String content = result['content'];
     int type = result['type'];
-    String due = '';
+    int due;
     if(result['due'] != null){
-      due = DateFormat('yyyy-MM-dd').format(result['due']);
+      //due = DateFormat('yyyy-MM-dd').format(result['due']);
+      due = result['due'].millisecondsSinceEpoch;
     }
 
 
-    DateTime now = new DateTime.now();
-    String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+    int now = new DateTime.now().millisecondsSinceEpoch;
+    //String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
 
-    Task task = new Task(content: content, createTime: formattedDate, type: type, dueDate: due, status: 0);
+    Task task = new Task(content: content, createTime: now, type: type, dueDate: due, status: 0);
     _tasksBloc.inAddTask.add(task);
   }
 
@@ -73,37 +74,13 @@ class _TaskPageState extends State<TaskPage> {
   //   }
   // }
 
-  // void _promptCompleteTodoItem(Task todo) {
-  //   showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return new AlertDialog(
-  //           title: Text('Complete "${todo.content}"?'),
-  //           actions: <Widget>[
-  //             new FlatButton(
-  //                 child: new Text('CANCEL'),
-  //                 onPressed: () => Navigator.of(context).pop(false)
-  //             ),
-  //             new FlatButton(
-  //                 child: new Text('COMPLETE'),
-  //                 onPressed: () {
-  //                   _handleComplete(todo);
-  //                 }
-  //               )
-  //            ]
-
-  //         );
-  //       }
-  //   );
-  // }
-
   void _handleComplete(Task todo) async{
 
     todo.status = 1;
-    DateTime now = new DateTime.now();
-    String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+    int now = new DateTime.now().millisecondsSinceEpoch;
+    //String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
 
-    todo.finishedTime = formattedDate;
+    todo.finishedTime = now;
 
     _tasksBloc.inConfirmTask.add(todo);
 
@@ -111,7 +88,7 @@ class _TaskPageState extends State<TaskPage> {
 
   void _handleUndoComplete(Task todo) async {
       todo.status = 0;
-      todo.finishedTime = "";
+      todo.finishedTime = null;
      _tasksBloc.inConfirmTask.add(todo);
   }
 
@@ -159,13 +136,13 @@ class _TaskPageState extends State<TaskPage> {
 
                         // Change Colors
                         if(index < tasks.length) {
-                          if(index % 2 == 0){
-                            if(colorCode > 100){
+                          
+                            if(colorCode > 300){
                               colorCode -= 100;
                             } else {
-                              colorCode = 100;
+                              colorCode = 300;
                             }
-                          }
+                          
                             
                           return _buildTodoItem(tasks[index], colorCode);
 
@@ -193,6 +170,37 @@ class _TaskPageState extends State<TaskPage> {
         tooltip: 'Add task',
         child: new Icon(Icons.add),),
     );
+  }
+
+  String formatDate(int timestamp) {
+
+    var date = new DateTime.fromMillisecondsSinceEpoch(timestamp);
+
+    int now = new DateTime.now().millisecondsSinceEpoch;
+    int today_0 = now -((now + 28800000) % 86400000);
+    int today_24 = today_0 + 86400000;
+  
+    // just now (2 mins)
+    if(timestamp <= now && timestamp > now - 120000 ){
+      return "just now";
+    }
+    // 1 hr ago
+    else if (timestamp <= now - 120000 && timestamp > now - 3600000){
+      return "a hour ago";
+    }
+    // earlier today
+    else if (timestamp <= now - 3600000 && timestamp >= today_0 ){
+      //return new DateFormat("h:mm a").format(date);
+      return "today";
+    }
+    // today
+    else if (timestamp > now && timestamp < today_24) {
+      return "today";
+    }
+    else {
+      return new DateFormat("yyyy-MM-dd").format(date);
+    }
+
   }
   
   // Build Each Item: 
@@ -284,16 +292,21 @@ class _TaskPageState extends State<TaskPage> {
                 child: Icon(icons[todo.type], color: Colors.white,),
                 ),
 
-              title: Text(todo.content, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.0),),
+              title: Text(todo.content, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20.0),),
 
               subtitle: Container(
                 margin: EdgeInsets.only(top: 8.0),
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                   Text(todo.createTime, style: TextStyle(color: Colors.white),),
-                   Text(todo.dueDate ?? "", style: TextStyle(color: Colors.white),),
-                   
+                  Container(
+                    padding: EdgeInsets.only(bottom: 6.0),     
+                    child: Text(todo.dueDate != null ? "Due ${formatDate(todo.dueDate)}" : "No due date", 
+                          style: TextStyle(color: Colors.grey[200], fontSize: 16.0),),
+                  ),           
+                  Text("Created ${formatDate(todo.createTime)}", 
+                        style: TextStyle(color: Colors.grey[400], fontSize: 12.0),),
+
                 ],
                ),
               ),            
