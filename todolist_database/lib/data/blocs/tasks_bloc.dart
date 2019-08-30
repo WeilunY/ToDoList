@@ -29,6 +29,7 @@ class TasksBloc implements BlocBase {
     final _confirmTaskController = StreamController<Task>.broadcast();
     StreamSink<Task> get inConfirmTask => _confirmTaskController.sink;
 
+
     TasksBloc() {
         // Retrieve all the Tasks on initialization
         getTasks();
@@ -36,6 +37,7 @@ class TasksBloc implements BlocBase {
         _confirmTaskController.stream.listen(_handleConfirmTask);
         _deleteTaskController.stream.listen(_handleDeleteTask);
         _addTaskController.stream.listen(_handleAddTask);
+
     }
 
     // All stream controllers you create should be closed within this function
@@ -54,22 +56,33 @@ class TasksBloc implements BlocBase {
         _inTasks.add(tasks);
     }
 
+
+    void updateType(int type) async {
+      if(type == 0){
+        getTasks();
+      }
+      else{
+        List<Task> tasks = await DBProvider.db.getType(type);
+        _inTasks.add(tasks);
+      }
+    }
+
     void _handleAddTask(Task task) async {
 
         await DBProvider.db.newTask(task);
-        getTasks();
+        //getTasks();
     }
 
     void _handleConfirmTask(Task task) async {
 
         await DBProvider.db.updateTask(task);
-        getTasks();
+        //getTasks();
     }
 
     void _handleDeleteTask(int id) async {
 
         await DBProvider.db.deleteTask(id);
         _inDeleted.add(true);
-        getTasks();
+        //getTasks();
     }
 }

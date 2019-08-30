@@ -5,6 +5,10 @@ import 'package:intl/intl.dart';
 
 
 class TodoForm extends StatefulWidget {
+  final int type;
+
+  TodoForm({Key key, this.type}) : super(key: key);
+
   @override
   _TodoFormState createState() => new _TodoFormState();
 }
@@ -12,8 +16,9 @@ class TodoForm extends StatefulWidget {
 class _TodoFormState extends State<TodoForm> {
 
   final GlobalKey<FormBuilderState> _fbKey = new GlobalKey<FormBuilderState>();
-
+ 
   Map<int, String> types = {1: "Home", 2: "School", 3: "Work"};
+  Map<int, Color> color = {1: Colors.blue[200], 2: Colors.purple[200], 3: Colors.indigo[200]};
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +110,7 @@ class _TodoFormState extends State<TodoForm> {
 
           Card(
             elevation: 8.0,
-            color: Colors.blue[200],
+            color: color[widget.type == 0 ? 1 : widget.type],
             child: Container(
               padding: EdgeInsets.all(10.0),
               child: Container(
@@ -116,7 +121,7 @@ class _TodoFormState extends State<TodoForm> {
                   Text("Select Type: ", style: TextStyle(fontSize: 20.0, color: Colors.black87, fontWeight: FontWeight.bold),),
                     FormBuilderDropdown(
                       attribute: "type",
-                      initialValue: 1,
+                      initialValue: widget.type == 0 ? 1 : widget.type ,
                       
                       hint: Text('Select Type'),
                       validators: [FormBuilderValidators.required()],

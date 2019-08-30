@@ -25,6 +25,7 @@ class _HistoryState extends State<History> {
     _historyBloc = BlocProvider.of<HistoryBloc>(context);
   }
 
+
   @override
   Widget build(BuildContext context ){
 

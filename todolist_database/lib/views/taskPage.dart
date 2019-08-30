@@ -6,6 +6,7 @@ import '../data/blocs/view_task_bloc.dart';
 import '../model/task.dart';
 import 'package:intl/intl.dart';
 import './todoForm.dart';
+import '../model/type.dart';
 
 
 class TaskPage extends StatefulWidget {
@@ -43,12 +44,14 @@ class _TaskPageState extends State<TaskPage> {
     //String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
 
     Task task = new Task(content: content, createTime: now, type: type, dueDate: due, status: 0);
-    _tasksBloc.inAddTask.add(task);
+    await _tasksBloc.inAddTask.add(task);
+
+    _tasksBloc.updateType(task.type);
   }
 
   void _pushTodoScreen() async {
     final result = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => TodoForm())
+      MaterialPageRoute(builder: (context) => TodoForm(type: type,))
     );
     
     if(result != null){
@@ -82,32 +85,86 @@ class _TaskPageState extends State<TaskPage> {
 
     todo.finishedTime = now;
 
-    _tasksBloc.inConfirmTask.add(todo);
+    await _tasksBloc.inConfirmTask.add(todo);
+    _tasksBloc.updateType(type);
 
   }
 
   void _handleUndoComplete(Task todo) async {
       todo.status = 0;
       todo.finishedTime = null;
-     _tasksBloc.inConfirmTask.add(todo);
+     await _tasksBloc.inConfirmTask.add(todo);
+     _tasksBloc.updateType(type);
   }
 
 
   void _handleDelete(int id) async {
-    _tasksBloc.inDeleteTask.add(id);
+    await _tasksBloc.inDeleteTask.add(id);
+    _tasksBloc.updateType(type);
   }
 
   void _handleUndoDelete(Task todo) async {
-    _tasksBloc.inAddTask.add(todo);
+    await _tasksBloc.inAddTask.add(todo);
+    _tasksBloc.updateType(type);
   }
 
+  var type = 0;
+  var title = "All";
+
+  Widget _buildType(int code, String content, Color color, Icon icon){
+    return Container(
+      padding: EdgeInsets.fromLTRB(12.0, 8.0, 16.0, 8.0),
+      margin: EdgeInsets.only(bottom: 8.0),
+      color: color,
+      child: ListTile(
+        leading: icon,
+        title: Text( content ,style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.0)),
+        onTap: () async {
+          _tasksBloc.updateType(code);
+          setState(() {
+            type = code;
+            title = content;
+          });
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Todo List"),
+        title: Text(title),
       ),
+
+      drawer: Drawer(
+
+        child: Container(
+          color: Color.fromRGBO(58, 66, 86, 1.0),
+          child: ListView(
+          // Important: Remove any padding from the ListView.
+          
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              padding: EdgeInsets.fromLTRB(16.0, 80.0, 16.0, 8.0),
+              child: Text('Select Type', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30.0),),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(44, 50, 65, 1.0),
+              ),
+            ),
+            _buildType(0, "All", Colors.black87, Icon(Icons.present_to_all, color: Colors.white,)),
+            _buildType(1, "Home", Colors.blue[800], Icon(Icons.home, color: Colors.white,)),
+            _buildType(2, "School", Colors.purple[800], Icon(Icons.school, color: Colors.white,)),
+            _buildType(3, "Work", Colors.indigo[800], Icon(Icons.work, color: Colors.white,),),
+
+           
+          ],
+        ),
+      ),),
 
       backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
 
@@ -136,20 +193,17 @@ class _TaskPageState extends State<TaskPage> {
 
                         // Change Colors
                         if(index < tasks.length) {
-                          
-                            if(colorCode > 300){
-                              colorCode -= 100;
-                            } else {
-                              colorCode = 300;
-                            }
-                          
-                            
-                          return _buildTodoItem(tasks[index], colorCode);
 
+                          if(colorCode > 300){
+                            colorCode -= 100;
+                          } else {
+                            colorCode = 300;
+                          }
+
+                        return _buildTodoItem(tasks[index], colorCode);
                         }
                       }
                     );
-
                   }
                   return Center(
                     child: CircularProgressIndicator(),
@@ -207,7 +261,7 @@ class _TaskPageState extends State<TaskPage> {
   Widget _buildTodoItem(Task todo, int colorCode){
 
     Map<int, dynamic> colors = {1: Colors.blue[colorCode], 2: Colors.purple[colorCode], 3: Colors.indigo[colorCode]};
-    Map<int, dynamic> icons = {1: Icons.home, 2: Icons.school, 3: Icons.business};
+    Map<int, dynamic> icons = {1: Icons.home, 2: Icons.school, 3: Icons.work};
 
     const textStyle =  TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18.0);
     
