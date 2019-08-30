@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:todolist_database/data/blocs/bloc_provider.dart';
 import '../data/blocs/history_bloc.dart';
 import '../model/task.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:intl/intl.dart';
 
 
 class History extends StatefulWidget {
@@ -60,8 +62,8 @@ class _HistoryState extends State<History> {
             );
           },
         ),
-    );
-  }
+      );
+    }
 
     Widget _buildTodoItem(Task todo){
 
@@ -77,61 +79,120 @@ class _HistoryState extends State<History> {
     }
     
   
-    return Dismissible(
+    return Slidable(
+      
       key: Key(todo.id.toString()),
+      actionPane: SlidableDrawerActionPane(),
+      actionExtentRatio: 0.25,
 
-      onDismissed: (direction) async {
-        if(direction == DismissDirection.startToEnd) {
+      actions: <Widget>[
+      IconSlideAction(
+        caption: 'Delete',
+        color: Colors.red,
+        icon: Icons.delete,
+        onTap: () {
           _handleDelete(todo.id);
-
-           Scaffold.of(context).showSnackBar(
+          Scaffold.of(context).showSnackBar(
              SnackBar(
-               content: Text("Item Deleted"),
+               content: Text("${todo.content} Deleted"),
                action: SnackBarAction(
                  label: "Undo",
                  onPressed: () {_handleUndoDelete(todo); },
                ),
              )
            );
-         
-          } else {
+          },
+        ),
+      ],
+      
+      secondaryActions: <Widget>[
+        IconSlideAction(
+        caption: todo.status == 1 ? "INCOMPLETE" : "COMPLETE",
+        color: todo.status == 1 ? Colors.blue : Colors.blue[900],
+        icon: todo.status == 1 ? Icons.cancel : Icons.check_circle,
+        onTap: () {
+
+          if (todo.status == 1) {
             _handleINComplete(todo);
-
             Scaffold.of(context).showSnackBar(
-             SnackBar(
-               content: Text("Item Completed"),
-               action: SnackBarAction(
-                 label: "Undo",
-                 onPressed: () {_handleUndoINComplete(todo); },
-               ),)
-           );
-            
+              SnackBar(
+                content: Text("${todo.content} marked as incomplete"),
+                action: SnackBarAction(
+                  label: "Undo",
+                  onPressed: () {_handleUndoINComplete(todo); },
+                ),
+              )
+            );
+          } else {
+            _handleComplete(todo);
+            Scaffold.of(context).showSnackBar(
+              SnackBar(
+                content: Text("${todo.content} marked as complete"),
+                action: SnackBarAction(
+                  label: "Undo",
+                  onPressed: () {_handleUndoComplete(todo); },
+                ),
+              )
+            );
+
           }
-      },
+          
+          },
+        ),
+      ],
 
-      background: Container(
-        padding: EdgeInsets.only(left: 16.0),
-        color: Colors.red[800],
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text("DELETE", style: textStyle,)
-          ],
-        )
-      ),
+      // onDismissed: (direction) async {
+      //   if(direction == DismissDirection.startToEnd) {
+      //     _handleDelete(todo.id);
 
-      secondaryBackground: Container(
-        padding: EdgeInsets.only(right: 16.0),
-        color: Colors.green[800],
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Text("INCOMPELTE", style: textStyle)
-          ],
-        )
-      ),
+      //      Scaffold.of(context).showSnackBar(
+      //        SnackBar(
+      //          content: Text("Item Deleted"),
+      //          action: SnackBarAction(
+      //            label: "Undo",
+      //            onPressed: () {_handleUndoDelete(todo); },
+      //          ),
+      //        )
+      //      );
+         
+      //     } else {
+      //       _handleINComplete(todo);
+
+      //       Scaffold.of(context).showSnackBar(
+      //        SnackBar(
+      //          content: Text("Item Completed"),
+      //          action: SnackBarAction(
+      //            label: "Undo",
+      //            onPressed: () {_handleUndoINComplete(todo); },
+      //          ),)
+      //      );
+            
+      //     }
+      // },
+
+      // background: Container(
+      //   padding: EdgeInsets.only(left: 16.0),
+      //   color: Colors.red[800],
+      //   child: Column(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     crossAxisAlignment: CrossAxisAlignment.start,
+      //     children: <Widget>[
+      //       Text("DELETE", style: textStyle,)
+      //     ],
+      //   )
+      // ),
+
+      // secondaryBackground: Container(
+      //   padding: EdgeInsets.only(right: 16.0),
+      //   color: Colors.green[800],
+      //   child: Column(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     crossAxisAlignment: CrossAxisAlignment.end,
+      //     children: <Widget>[
+      //       Text("INCOMPELTE", style: textStyle)
+      //     ],
+      //   )
+      // ),
 
       child: 
         Card(
@@ -193,6 +254,24 @@ class _HistoryState extends State<History> {
 
   void _handleUndoDelete(Task todo) async {
     _historyBloc.inAddTask.add(todo);
+  }
+
+  void _handleComplete(Task todo) async{
+
+    todo.status = 1;
+    DateTime now = new DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+
+    todo.finishedTime = formattedDate;
+
+    _historyBloc.inUnConfirmTask.add(todo);
+
+  }
+
+  void _handleUndoComplete(Task todo) async {
+      todo.status = 0;
+      todo.finishedTime = "";
+     _historyBloc.inUnConfirmTask.add(todo);
   }
 
   

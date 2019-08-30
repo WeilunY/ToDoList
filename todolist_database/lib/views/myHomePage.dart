@@ -47,8 +47,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: History(),
               );
 
-            case NavBarItem.PROFILE:
-              return Profile();
+            // case NavBarItem.PROFILE:
+            //   return Profile();
           }
         },
       ),
@@ -74,10 +74,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: Text('History'),
                 icon: Icon(Icons.history),
               ),
-              BottomNavigationBarItem(
-                title: Text('Profile'),
-                icon: Icon(Icons.person),
-              ),
+              // BottomNavigationBarItem(
+              //   title: Text('Profile'),
+              //   icon: Icon(Icons.person),
+              // ),
             ],
           );
         },

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:todolist_database/data/blocs/bloc_provider.dart';
 
-enum NavBarItem { TASK, HISTORY, PROFILE }
+enum NavBarItem { TASK, HISTORY }
 
 class BottomNavBarBloc implements BlocBase {
   final StreamController<NavBarItem> _navBarController =
@@ -20,9 +20,9 @@ class BottomNavBarBloc implements BlocBase {
       case 1:
         _navBarController.sink.add(NavBarItem.HISTORY);
         break;
-      case 2:
-        _navBarController.sink.add(NavBarItem.PROFILE);
-        break;
+      // case 2:
+      //   _navBarController.sink.add(NavBarItem.PROFILE);
+      //   break;
     }
   }
 

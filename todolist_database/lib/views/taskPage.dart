@@ -107,8 +107,6 @@ class _TaskPageState extends State<TaskPage> {
 
     _tasksBloc.inConfirmTask.add(todo);
 
-   
-
   }
 
   void _handleUndoComplete(Task todo) async {
@@ -215,7 +213,7 @@ class _TaskPageState extends State<TaskPage> {
 
            Scaffold.of(context).showSnackBar(
              SnackBar(
-               content: Text("Item Deleted"),
+               content: Text("${todo.content} Deleted"),
                action: SnackBarAction(
                  label: "Undo",
                  onPressed: () {_handleUndoDelete(todo); },
@@ -228,7 +226,7 @@ class _TaskPageState extends State<TaskPage> {
 
             Scaffold.of(context).showSnackBar(
              SnackBar(
-               content: Text("Item Completed"),
+               content: Text("${todo.content} Completed"),
                action: SnackBarAction(
                  label: "Undo",
                  onPressed: () {_handleUndoComplete(todo); },

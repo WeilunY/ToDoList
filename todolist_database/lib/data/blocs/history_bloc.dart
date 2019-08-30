@@ -71,6 +71,7 @@ class HistoryBloc implements BlocBase {
         await DBProvider.db.newTask(task);
         getTasks();
   }
+  
 
 
 }

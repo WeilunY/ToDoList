@@ -146,7 +146,7 @@ class _TodoFormState extends State<TodoForm> {
           margin: EdgeInsets.all(8.0),
           child: RaisedButton(
             elevation: 8.0,
-            color: Colors.cyan[200],
+            color: Colors.green[400],
             child: Text("Submit", style: TextStyle(fontSize: 18.0, color: Colors.black87, fontWeight: FontWeight.bold),),
             onPressed: () {
               _fbKey.currentState.save();
@@ -161,7 +161,7 @@ class _TodoFormState extends State<TodoForm> {
         Container(
           margin: EdgeInsets.all(8.0),
           child: RaisedButton(
-            color: Colors.purple[200],
+            color: Colors.red[400],
             elevation: 8.0,
             child: Text("Reset", style: TextStyle(fontSize: 18.0, color: Colors.black87, fontWeight: FontWeight.bold),),
             onPressed: () {
