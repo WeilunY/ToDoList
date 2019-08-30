@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:todolist_database/data/blocs/bloc_provider.dart';
-//import 'package:http/http.dart' as http;
 import '../data/blocs/history_bloc.dart';
 import '../model/task.dart';
-import 'package:intl/intl.dart';
 
-import 'dart:async';
-import 'dart:convert';
 
 class History extends StatefulWidget {
 
@@ -16,23 +12,6 @@ class History extends StatefulWidget {
 
 
 class _HistoryState extends State<History> {
-
-  // Future<List<ToDoItem>> fetchToDoItems(http.Client client) async {
-
-  //   var url = "http://localhost:8080/item/get";
-  //   Map<String, String> headers = {"Content-type": "application/json"};
-  //   String json = '{"status": 2, "user_id": 1}';
-
-  //   final response = await client.post(url, headers: headers, body: json);
-  
-  //   return parseToDo(response.body);
-  // }
-
-  // List<ToDoItem> parseToDo(String responseBody){
-  //   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
-
-  //   return parsed.map<ToDoItem> ((json) => ToDoItem.fromJson(json)).toList();
-  // }
 
   HistoryBloc _historyBloc;
 
@@ -81,65 +60,142 @@ class _HistoryState extends State<History> {
             );
           },
         ),
-
-
-        // body: FutureBuilder<List<ToDoItem>> (
-        //   future: fetchToDoItems(http.Client()),
-        //   builder: (context, snapshot) {
-        //     if (snapshot.hasError) print(snapshot.error);
-
-        //     return snapshot.hasData ?
-        //     ToDosList(todos: snapshot.data)
-        //     : Center(child: CircularProgressIndicator());
-        //   },
-        // ),
-
-
     );
   }
 
     Widget _buildTodoItem(Task todo){
 
-    var finish = "Unfinished";
+    const textStyle =  TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18.0);
+
+    var finish = "Incomplete";
     var icon = Icons.cancel;
    
 
     if(todo.status == 1){
-      finish = "Finished";
+      finish = "Complete";
       icon = Icons.check_circle;
     }
     
   
-    return Card(
-        elevation: 8.0,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
-        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-        color: todo.status == 1 ? Colors.blue[900] : Colors.blue,
-        child: 
-            ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              leading: Container(
-                padding: EdgeInsets.only(right: 12.0),
-                decoration: new BoxDecoration(
-                    border: new Border(
-                        right: new BorderSide(width: 1.0,color: Colors.white,))
-                        ),
-                child: Icon(icon, color: Colors.white,),
-                ),
+    return Dismissible(
+      key: Key(todo.id.toString()),
 
-              title: Text(finish, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0, color: Colors.white,),),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                   Text(todo.content, style: TextStyle(color: Colors.white,)),
-                   
-                ],
-               )
+      onDismissed: (direction) async {
+        if(direction == DismissDirection.startToEnd) {
+          _handleDelete(todo.id);
 
-            ),
+           Scaffold.of(context).showSnackBar(
+             SnackBar(
+               content: Text("Item Deleted"),
+               action: SnackBarAction(
+                 label: "Undo",
+                 onPressed: () {_handleUndoDelete(todo); },
+               ),
+             )
+           );
+         
+          } else {
+            _handleINComplete(todo);
+
+            Scaffold.of(context).showSnackBar(
+             SnackBar(
+               content: Text("Item Completed"),
+               action: SnackBarAction(
+                 label: "Undo",
+                 onPressed: () {_handleUndoINComplete(todo); },
+               ),)
+           );
+            
+          }
+      },
+
+      background: Container(
+        padding: EdgeInsets.only(left: 16.0),
+        color: Colors.red[800],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text("DELETE", style: textStyle,)
+          ],
+        )
+      ),
+
+      secondaryBackground: Container(
+        padding: EdgeInsets.only(right: 16.0),
+        color: Colors.green[800],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Text("INCOMPELTE", style: textStyle)
+          ],
+        )
+      ),
+
+      child: 
+        Card(
+          elevation: 8.0,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
+          margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+          color: todo.status == 1 ? Colors.blue[900] : Colors.blue,
+          child: 
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                leading: Container(
+                  padding: EdgeInsets.only(right: 12.0),
+                  decoration: new BoxDecoration(
+                      border: new Border(
+                          right: new BorderSide(width: 1.0,color: Colors.white,))
+                          ),
+                  child: Icon(icon, color: Colors.white,),
+                  ),
+
+                title: Text(finish, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0, color: Colors.white,),),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(todo.content, style: TextStyle(color: Colors.white,)),
+                    
+                  ],
+                )
+              ),
+      ),
 
     );
   }
+
+  var temp;
+
+  void _handleINComplete(Task todo) async{
+
+    todo.status = 0;
+
+    temp = todo.finishedTime;
+
+    todo.finishedTime = "";
+
+    _historyBloc.inUnConfirmTask.add(todo);
+
+  }
+
+
+  void _handleUndoINComplete(Task todo) async {
+      todo.status = 1;
+      todo.finishedTime = temp;
+     _historyBloc.inUnConfirmTask.add(todo);
+  }
+
+
+  void _handleDelete(int id) async {
+    _historyBloc.inDeleteTask.add(id);
+  }
+
+  void _handleUndoDelete(Task todo) async {
+    _historyBloc.inAddTask.add(todo);
+  }
+
+  
 }
 
 
@@ -147,23 +203,4 @@ class _HistoryState extends State<History> {
 
 
 
-
-
-// todolist: Helper 
-// class ToDosList extends StatelessWidget {
-//   final List<ToDoItem> todos;
-
-//   ToDosList({Key key, this.todos}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return ListView.builder(
-//       itemCount: todos.length,
-//       itemBuilder: (context, index) {
-//         return 
-//         _buildTodoItem(todos[index]);
-      
-//       },
-//     );
-//   }
 

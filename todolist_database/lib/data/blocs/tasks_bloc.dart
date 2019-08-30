@@ -62,13 +62,14 @@ class TasksBloc implements BlocBase {
 
     void _handleConfirmTask(Task task) async {
 
-      await DBProvider.db.updateTask(task);
-      getTasks();
+        await DBProvider.db.updateTask(task);
+        getTasks();
     }
 
     void _handleDeleteTask(int id) async {
 
         await DBProvider.db.deleteTask(id);
         _inDeleted.add(true);
+        getTasks();
     }
 }

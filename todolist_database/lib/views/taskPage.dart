@@ -55,47 +55,47 @@ class _TaskPageState extends State<TaskPage> {
     }
   }
 
-  void _navigateToNote(Task task) async {
+  // void _navigateToNote(Task task) async {
 
-    bool update = await Navigator.of(context).push(
-        MaterialPageRoute( 
-          builder: (context) => BlocProvider(
-              bloc: ViewTaskBloc(),
-              child: ViewTaskPage(
-                  task: task,
-              ),
-          ),
-        ),
-    );
+  //   bool update = await Navigator.of(context).push(
+  //       MaterialPageRoute( 
+  //         builder: (context) => BlocProvider(
+  //             bloc: ViewTaskBloc(),
+  //             child: ViewTaskPage(
+  //                 task: task,
+  //             ),
+  //         ),
+  //       ),
+  //   );
 
-    if (update != null) {
-        _tasksBloc.getTasks();
-    }
-  }
+  //   if (update != null) {
+  //       _tasksBloc.getTasks();
+  //   }
+  // }
 
-  void _promptCompleteTodoItem(Task todo) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return new AlertDialog(
-            title: Text('Complete "${todo.content}"?'),
-            actions: <Widget>[
-              new FlatButton(
-                  child: new Text('CANCEL'),
-                  onPressed: () => Navigator.of(context).pop(false)
-              ),
-              new FlatButton(
-                  child: new Text('COMPLETE'),
-                  onPressed: () {
-                    _handleComplete(todo);
-                  }
-                )
-             ]
+  // void _promptCompleteTodoItem(Task todo) {
+  //   showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return new AlertDialog(
+  //           title: Text('Complete "${todo.content}"?'),
+  //           actions: <Widget>[
+  //             new FlatButton(
+  //                 child: new Text('CANCEL'),
+  //                 onPressed: () => Navigator.of(context).pop(false)
+  //             ),
+  //             new FlatButton(
+  //                 child: new Text('COMPLETE'),
+  //                 onPressed: () {
+  //                   _handleComplete(todo);
+  //                 }
+  //               )
+  //            ]
 
-          );
-        }
-    );
-  }
+  //         );
+  //       }
+  //   );
+  // }
 
   void _handleComplete(Task todo) async{
 
@@ -107,44 +107,23 @@ class _TaskPageState extends State<TaskPage> {
 
     _tasksBloc.inConfirmTask.add(todo);
 
-    Navigator.of(context).pop(true);
+   
 
   }
 
-  void _promptDeleteTodoItem(Task todo) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return new AlertDialog(
-            title: Text('Delete "${todo.content}" ?'),
-            actions: <Widget>[
-              new FlatButton(
-                  child: new Text('CANCEL'),
-                  onPressed: () => Navigator.of(context).pop(false)
-              ),
-              new FlatButton(
-                  child: new Text('DELETE'),
-                  onPressed: () {
-                    _handleDelete(todo.id);
-                  }
-                )
-             ]
-
-          );
-        }
-    );
+  void _handleUndoComplete(Task todo) async {
+      todo.status = 0;
+      todo.finishedTime = "";
+     _tasksBloc.inConfirmTask.add(todo);
   }
 
-  void _handleDelete(int id){
 
+  void _handleDelete(int id) async {
     _tasksBloc.inDeleteTask.add(id);
+  }
 
-    _tasksBloc.deleted.listen((deleted) {
-        if (deleted) {
-            Navigator.of(context).pop(true);
-        }
-    });
-
+  void _handleUndoDelete(Task todo) async {
+    _tasksBloc.inAddTask.add(todo);
   }
 
   @override
@@ -230,12 +209,31 @@ class _TaskPageState extends State<TaskPage> {
 
       key: Key(todo.id.toString()),
 
-      confirmDismiss: (direction) async {
+      onDismissed: (direction) async {
         if(direction == DismissDirection.startToEnd) {
-            _promptDeleteTodoItem(todo);
+          _handleDelete(todo.id);
+
+           Scaffold.of(context).showSnackBar(
+             SnackBar(
+               content: Text("Item Deleted"),
+               action: SnackBarAction(
+                 label: "Undo",
+                 onPressed: () {_handleUndoDelete(todo); },
+               ),
+             )
+           );
          
           } else {
-            _promptCompleteTodoItem(todo);
+            _handleComplete(todo);
+
+            Scaffold.of(context).showSnackBar(
+             SnackBar(
+               content: Text("Item Completed"),
+               action: SnackBarAction(
+                 label: "Undo",
+                 onPressed: () {_handleUndoComplete(todo); },
+               ),)
+           );
             
           }
       },
@@ -300,19 +298,9 @@ class _TaskPageState extends State<TaskPage> {
                    
                 ],
                ),
-              ),
-              
-
-              // trailing: 
-              //       FlatButton(
-              //         child: Icon(Icons.edit, color: Colors.white),
-              //         onPressed:() => _navigateToNote(todo),//_promptRemoveTodoItem(todo),
-                 
-              )
-
-              
-             
-          ),   
+              ),            
+            ),   
+          )
         )
       );
     
