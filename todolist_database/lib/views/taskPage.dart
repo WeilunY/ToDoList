@@ -6,7 +6,7 @@ import '../data/blocs/view_task_bloc.dart';
 import '../model/task.dart';
 import 'package:intl/intl.dart';
 import './todoForm.dart';
-import '../model/type.dart';
+//import '../model/type.dart';
 
 
 class TaskPage extends StatefulWidget {
@@ -59,23 +59,23 @@ class _TaskPageState extends State<TaskPage> {
     }
   }
 
-  // void _navigateToNote(Task task) async {
+  void _navigateToView(Task task) async {
 
-  //   bool update = await Navigator.of(context).push(
-  //       MaterialPageRoute( 
-  //         builder: (context) => BlocProvider(
-  //             bloc: ViewTaskBloc(),
-  //             child: ViewTaskPage(
-  //                 task: task,
-  //             ),
-  //         ),
-  //       ),
-  //   );
+    final update = await Navigator.of(context).push(
+        MaterialPageRoute( 
+          builder: (context) => BlocProvider(
+              bloc: ViewTaskBloc(),
+              child: ViewTaskPage(
+                  task: task,
+              ),
+          ),
+        ),
+    );
 
-  //   if (update != null) {
-  //       _tasksBloc.getTasks();
-  //   }
-  // }
+    if (update != null) {
+        _tasksBloc.updateType(task.type);
+    }
+  }
 
   void _handleComplete(Task todo) async{
 
@@ -328,11 +328,14 @@ class _TaskPageState extends State<TaskPage> {
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
         margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
 
+
         child: Container(
           //decoration: BoxDecoration(),
 
           child: 
             ListTile(
+              onTap: () => _navigateToView(todo),
+
               contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
 
               leading: Container(
@@ -346,7 +349,7 @@ class _TaskPageState extends State<TaskPage> {
                 child: Icon(icons[todo.type], color: Colors.white,),
                 ),
 
-              title: Text(todo.content, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20.0),),
+              title: Text(todo.content ?? "", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20.0),),
 
               subtitle: Container(
                 margin: EdgeInsets.only(top: 8.0),
